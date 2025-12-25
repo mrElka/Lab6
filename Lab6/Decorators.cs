@@ -2,7 +2,7 @@
 
 namespace Lab6
 {
-    // Базовый декоратор
+
     public abstract class EmployeeDecorator : Employee
     {
         protected Employee _employee;
@@ -18,14 +18,12 @@ namespace Lab6
             return _employee.GetInfo();
         }
 
-        // Переопределяем CalculateSalary для корректной работы с декораторами
         public new decimal CalculateSalary(IPaymentStrategy paymentStrategy)
         {
             return paymentStrategy.CalculateFinalSalary(MonthlySalary);
         }
     }
 
-    // Декоратор для знания английского языка
     public class EnglishDecorator : EmployeeDecorator
     {
         private string _certificateName;
@@ -49,7 +47,6 @@ namespace Lab6
         }
     }
 
-    // Декоратор для ученой степени
     public class DegreeDecorator : EmployeeDecorator
     {
         private string _fieldOfScience;
@@ -77,7 +74,6 @@ namespace Lab6
         }
     }
 
-    // Дополнительный декоратор для демонстрации расширяемости
     public class ConferenceDecorator : EmployeeDecorator
     {
         private string _conferenceName;

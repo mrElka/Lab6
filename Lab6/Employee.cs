@@ -2,7 +2,6 @@
 
 namespace Lab6
 {
-    // Базовый абстрактный класс сотрудника
     public abstract class Employee
     {
         public string Name { get; set; }
@@ -14,17 +13,14 @@ namespace Lab6
             MonthlySalary = monthlySalary;
         }
 
-        // Метод для получения информации о сотруднике
         public abstract string GetInfo();
 
-        // Метод для расчета зарплаты (будет использовать стратегию)
         public decimal CalculateSalary(IPaymentStrategy paymentStrategy)
         {
             return paymentStrategy.CalculateFinalSalary(MonthlySalary);
         }
     }
 
-    // Конкретные классы сотрудников
     public class Researcher : Employee
     {
         public Researcher(string name, decimal monthlySalary)

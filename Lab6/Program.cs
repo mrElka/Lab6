@@ -14,10 +14,8 @@ namespace Lab6
             Console.WriteLine("Паттерны проектирования: Декоратор и Стратегия");
             Console.WriteLine("======================================================\n");
 
-            // Создаем список для хранения сотрудников
             List<Employee> employees = new List<Employee>();
 
-            // 1. СОЗДАНИЕ СОТРУДНИКОВ РАЗНЫХ ДОЛЖНОСТЕЙ
             Console.WriteLine("1. СОЗДАНИЕ СОТРУДНИКОВ:");
             Console.WriteLine("------------------------");
 
@@ -38,14 +36,11 @@ namespace Lab6
                 Console.WriteLine();
             }
 
-            // 2. ПРИМЕНЕНИЕ ДЕКОРАТОРОВ
             Console.WriteLine("\n2. ДОБАВЛЕНИЕ ХАРАКТЕРИСТИК ЧЕРЕЗ ДЕКОРАТОРЫ:");
             Console.WriteLine("---------------------------------------------");
 
-            // Создаем список декорированных сотрудников
             List<Employee> decoratedEmployees = new List<Employee>();
 
-            // Исследователь: английский + ученая степень
             Employee decoratedResearcher = new EnglishDecorator(
                 new DegreeDecorator(researcher, "Физические науки",
                     "Исследование квантовых эффектов в наноматериалах", 2020),
@@ -53,13 +48,11 @@ namespace Lab6
             );
             decoratedEmployees.Add(decoratedResearcher);
 
-            // Лаборант: только английский
             Employee decoratedLabAssistant = new EnglishDecorator(
                 labAssistant, "IELTS General", new DateTime(2023, 3, 15)
             );
             decoratedEmployees.Add(decoratedLabAssistant);
 
-            // Менеджер проекта: ученая степень + конференция
             Employee decoratedManager = new ConferenceDecorator(
                 new DegreeDecorator(projectManager, "Экономические науки",
                     "Управление распределенными научными проектами", 2019),
@@ -68,7 +61,6 @@ namespace Lab6
             );
             decoratedEmployees.Add(decoratedManager);
 
-            // Аналитик данных: все три декоратора
             Employee decoratedAnalyst = new EnglishDecorator(
                 new DegreeDecorator(
                     new ConferenceDecorator(dataAnalyst, "Data Science Conference",
@@ -79,7 +71,6 @@ namespace Lab6
             );
             decoratedEmployees.Add(decoratedAnalyst);
 
-            // Выводим информацию о декорированных сотрудниках
             Console.WriteLine("\nИнформация о сотрудниках после добавления характеристик:");
             Console.WriteLine("==========================================================");
 
@@ -90,17 +81,14 @@ namespace Lab6
                 Console.WriteLine("----------------------------------------------------------");
             }
 
-            // 3. ИСПОЛЬЗОВАНИЕ СТРАТЕГИЙ ДЛЯ РАСЧЕТА ЗАРПЛАТЫ
             Console.WriteLine("\n3. РАСЧЕТ ЗАРПЛАТЫ С ИСПОЛЬЗОВАНИЕМ СТРАТЕГИЙ:");
             Console.WriteLine("==============================================");
 
-            // Создаем стратегии
             IPaymentStrategy sberbankStrategy = new SberbankPaymentStrategy();
             IPaymentStrategy gazpromStrategy = new GazpromPaymentStrategy();
             IPaymentStrategy tinkoffStrategy = new TinkoffPaymentStrategy();
             IPaymentStrategy testStrategy = new NoCommissionPaymentStrategy();
 
-            // Создаем словарь для сопоставления сотрудников и их стратегий оплаты
             Dictionary<Employee, IPaymentStrategy> employeePaymentStrategies = new Dictionary<Employee, IPaymentStrategy>
             {
                 { decoratedResearcher, sberbankStrategy },
@@ -109,7 +97,6 @@ namespace Lab6
                 { decoratedAnalyst, tinkoffStrategy }
             };
 
-            // Расчет зарплаты для каждого сотрудника
             Console.WriteLine("\nРасчет заработной платы:");
             Console.WriteLine("-------------------------");
 
@@ -141,7 +128,6 @@ namespace Lab6
             Console.WriteLine($"  Общая сумма к выплате: {totalSalaryAfter:F2} руб.");
             Console.WriteLine($"  Общая комиссия банков: {totalSalaryBefore - totalSalaryAfter:F2} руб.");
 
-            // 4. ДЕМОНСТРАЦИЯ СМЕНЫ СТРАТЕГИИ "НА ЛЕТУ"
             Console.WriteLine("\n4. ДЕМОНСТРАЦИЯ СМЕНЫ СТРАТЕГИИ:");
             Console.WriteLine("================================");
 
@@ -170,17 +156,14 @@ namespace Lab6
                 Console.WriteLine($"    К выплате: {finalSalary:F2} руб.");
             }
 
-            // 5. ДОПОЛНИТЕЛЬНЫЕ ПРИМЕРЫ И ТЕСТЫ
             Console.WriteLine("\n5. ДОПОЛНИТЕЛЬНЫЕ ПРИМЕРЫ:");
             Console.WriteLine("==========================");
 
-            // Создаем нового сотрудника без декораторов
             Console.WriteLine("\nПример сотрудника без дополнительных характеристик:");
             Employee simpleEmployee = new LabAssistant("Петр Сергеев", 40000m);
             Console.WriteLine(simpleEmployee.GetInfo());
             Console.WriteLine($"Зарплата через Газпромбанк: {simpleEmployee.CalculateSalary(gazpromStrategy):F2} руб.");
 
-            // Добавляем декораторы динамически
             Console.WriteLine("\nДинамическое добавление характеристик:");
             Employee dynamicEmployee = new DataAnalyst("Ольга Новикова", 55000m);
             Console.WriteLine("Исходная информация:");
@@ -193,21 +176,6 @@ namespace Lab6
             dynamicEmployee = new DegreeDecorator(dynamicEmployee, "Математика", "Статистические методы", 2023);
             Console.WriteLine("\nПосле добавления ученой степени:");
             Console.WriteLine(dynamicEmployee.GetInfo());
-
-            // 6. ЗАКЛЮЧЕНИЕ
-            Console.WriteLine("\n6. ВЫВОДЫ:");
-            Console.WriteLine("==========");
-            Console.WriteLine("\n✓ Паттерн 'Декоратор' позволяет динамически добавлять");
-            Console.WriteLine("  новые характеристики сотрудникам без изменения их классов.");
-            Console.WriteLine("\n✓ Паттерн 'Стратегия' позволяет легко менять алгоритм");
-            Console.WriteLine("  расчета зарплаты и добавлять новые банковские сервисы.");
-            Console.WriteLine("\n✓ Оба паттерна соответствуют принципу Open/Closed:");
-            Console.WriteLine("  система открыта для расширения, но закрыта для модификации.");
-
-            Console.WriteLine("\n======================================================");
-            Console.WriteLine("ПРОГРАММА ЗАВЕРШЕНА. НАЖМИТЕ ЛЮБУЮ КЛАВИШУ ДЛЯ ВЫХОДА.");
-            Console.WriteLine("======================================================");
-            Console.ReadKey();
         }
     }
 }
