@@ -15,186 +15,159 @@ namespace Lab6Patterns
             Console.WriteLine("Паттерны проектирования: Декоратор и Стратегия");
             Console.WriteLine("======================================================\n");
 
-            List<Employee> employees = new List<Employee>();
+            // 1. СОЗДАЕМ ТРЕХ СОТРУДНИКОВ С ОДИНАКОВОЙ ИСХОДНОЙ ЗАРПЛАТОЙ
+            Console.WriteLine("1. СОЗДАНИЕ СОТРУДНИКОВ (исходная зарплата 60000 руб.):");
+            Console.WriteLine("=======================================================");
 
-            Console.WriteLine("1. СОЗДАНИЕ СОТРУДНИКОВ:");
-            Console.WriteLine("------------------------");
+            decimal baseSalary = 60000m;
 
-            Employee researcher = new Researcher("Иван Петров", 75000m);
-            Employee labAssistant = new LabAssistant("Мария Сидорова", 45000m);
-            Employee projectManager = new ProjectManager("Алексей Иванов", 90000m);
-            Employee dataAnalyst = new DataAnalyst("Елена Кузнецова", 68000m);
+            // 1.1 Обычный сотрудник
+            Employee normalEmployee = new Researcher("Обычный Сотрудник", baseSalary);
 
-            Employee alcoholicEmployee = new LabAssistant("Петр Водкин", 50000m);
+            // 1.2 Алкоголик
+            Employee alcoholicEmployee = new AlcoholicDecorator(
+                new LabAssistant("Алкоголик Сотрудник", baseSalary),
+                0.15m, // 15% удержание
+                "Профилактика алкоголизма"
+            );
 
-            employees.Add(researcher);
-            employees.Add(labAssistant);
-            employees.Add(projectManager);
-            employees.Add(dataAnalyst);
-            employees.Add(alcoholicEmployee);
+            // 1.3 Спортсмен (Иван Петров)
+            Employee sportsmanEmployee = new SportsmanDecorator(
+                new Researcher("Иван Петров (Спортсмен)", baseSalary),
+                3000m, // Бонус на протеин
+                "Бодибилдинг"
+            );
+
+            // Добавляем дополнительные декораторы для реалистичности
+            normalEmployee = new EnglishDecorator(normalEmployee, "IELTS", new DateTime(2023, 1, 1));
+            alcoholicEmployee = new EnglishDecorator(alcoholicEmployee, "Basic", new DateTime(2020, 5, 10));
+            sportsmanEmployee = new EnglishDecorator(sportsmanEmployee, "TOEFL", new DateTime(2022, 6, 15));
+
+            // 2. ВЫВОД ИНФОРМАЦИИ О СОТРУДНИКАХ
+            Console.WriteLine("\n2. ИНФОРМАЦИЯ О СОТРУДНИКАХ:");
+            Console.WriteLine("==============================");
+
+            List<Employee> employees = new List<Employee> { normalEmployee, alcoholicEmployee, sportsmanEmployee };
 
             foreach (var emp in employees)
             {
-                Console.WriteLine(emp.GetInfo());
-                Console.WriteLine($"Оклад: {emp.MonthlySalary} руб.");
-                Console.WriteLine();
-            }
-
-            Console.WriteLine("\n2. ДОБАВЛЕНИЕ ХАРАКТЕРИСТИК ЧЕРЕЗ ДЕКОРАТОРЫ:");
-            Console.WriteLine("---------------------------------------------");
-
-            List<Employee> decoratedEmployees = new List<Employee>();
-
-            Employee decoratedResearcher = new EnglishDecorator(
-                new DegreeDecorator(researcher, "Физические науки",
-                    "Исследование квантовых эффектов в наноматериалах", 2020),
-                "TOEFL iBT", new DateTime(2022, 6, 10)
-            );
-            decoratedEmployees.Add(decoratedResearcher);
-
-            Employee decoratedLabAssistant = new EnglishDecorator(
-                labAssistant, "IELTS General", new DateTime(2023, 3, 15)
-            );
-            decoratedEmployees.Add(decoratedLabAssistant);
-
-            Employee decoratedManager = new ConferenceDecorator(
-                new DegreeDecorator(projectManager, "Экономические науки",
-                    "Управление распределенными научными проектами", 2019),
-                "Международная конференция по управлению проектами",
-                "Agile в научных исследованиях", 2022
-            );
-            decoratedEmployees.Add(decoratedManager);
-
-            Employee decoratedAnalyst = new EnglishDecorator(
-                new DegreeDecorator(
-                    new ConferenceDecorator(dataAnalyst, "Data Science Conference",
-                        "Машинное обучение для обработки экспериментальных данных", 2023),
-                    "Информационные технологии",
-                    "Алгоритмы анализа больших данных в реальном времени", 2021),
-                "Cambridge English: Advanced", new DateTime(2021, 11, 5)
-            );
-            decoratedEmployees.Add(decoratedAnalyst);
-
-            Employee decoratedAlcoholic = new AlcoholicDecorator(
-                alcoholicEmployee,
-                0.15m,
-                "Удержание части зарплаты для ограничения расходов на алкогольные напитки"
-            );
-
-
-            decoratedAlcoholic = new EnglishDecorator(
-                decoratedAlcoholic,
-                "Basic English Certificate",
-                new DateTime(2020, 5, 10)
-            );
-
-            decoratedEmployees.Add(decoratedAlcoholic);
-
-            Console.WriteLine("\nИнформация о сотрудниках после добавления характеристик:");
-            Console.WriteLine("==========================================================");
-
-            foreach (var emp in decoratedEmployees)
-            {
                 Console.WriteLine("\n" + emp.GetInfo());
-
-                if (emp is AlcoholicDecorator alcoholic)
-                {
-                    Console.WriteLine($"Оригинальный оклад (до вычета): {alcoholic.GetOriginalSalary():F2} руб.");
-                }
-                else
-                {
-                    Console.WriteLine($"Оклад: {emp.MonthlySalary} руб.");
-                }
-
-                Console.WriteLine("----------------------------------------------------------");
+                Console.WriteLine(new string('-', 50));
             }
 
-            Console.WriteLine("\n3. РАСЧЕТ ЗАРПЛАТЫ С ИСПОЛЬЗОВАНИЕМ СТРАТЕГИЙ:");
-            Console.WriteLine("==============================================");
+            // 3. ДЕТАЛЬНЫЙ РАСЧЕТ ДЛЯ КАЖДОГО ТИПА
+            Console.WriteLine("\n3. ДЕТАЛЬНЫЙ РАСЧЕТ ЗАРПЛАТЫ (Газпромбанк 1.5%):");
 
-            IPaymentStrategy sberbankStrategy = new SberbankPaymentStrategy();
             IPaymentStrategy gazpromStrategy = new GazpromPaymentStrategy();
+            IPaymentStrategy sberbankStrategy = new SberbankPaymentStrategy();
             IPaymentStrategy tinkoffStrategy = new TinkoffPaymentStrategy();
-            IPaymentStrategy testStrategy = new NoCommissionPaymentStrategy();
 
-            Dictionary<Employee, IPaymentStrategy> employeePaymentStrategies = new Dictionary<Employee, IPaymentStrategy>
+            // 4. СРАВНИТЕЛЬНАЯ ТАБЛИЦА - ПРОСТОЙ ВАРИАНТ
+            Console.WriteLine("\n" + new string('-', 96));
+            Console.WriteLine("| {0,-20} | {1,-15} | {2,-15} | {3,-15} | {4,-15} |",
+                "Тип сотрудника", "Исходная", "После всех", "Чистыми", "Эффективность");
+            Console.WriteLine("| {0,-20} | {1,-15} | {2,-15} | {3,-15} | {4,-15} |",
+                "", "зарплата", "корректировок", "на руки", "");
+            Console.WriteLine(new string('-', 96));
+
+            // Расчеты на основе известной логики
+            decimal baseSalaryTable = 60000m; // Переименовал, чтобы не конфликтовать с основной переменной
+
+            // Обычный: 60000 - 1.5% комиссия = 59100
+            decimal normalAfterBankTable = baseSalaryTable * 0.985m; // 1.5% комиссия
+
+            // Алкоголик: 60000 - 15% = 51000, затем -1.5% = 50235
+            decimal alcoholicAfterBankTable = baseSalaryTable * 0.85m * 0.985m; // 15% налог + 1.5% комиссия
+
+            // Спортсмен: 60000 + 3000 = 63000, затем -1.5% = 62055
+            decimal sportsmanAfterBankTable = (baseSalaryTable + 3000m) * 0.985m; // +3000 бонус - 1.5% комиссия
+
+            var tableRows = new[]
             {
-                { decoratedResearcher, sberbankStrategy },
-                { decoratedLabAssistant, gazpromStrategy },
-                { decoratedManager, sberbankStrategy },
-                { decoratedAnalyst, tinkoffStrategy },
-                { decoratedAlcoholic, gazpromStrategy }
+    new { Type = "Обычный", Original = baseSalaryTable, AfterDecorators = baseSalaryTable, AfterBank = normalAfterBankTable },
+    new { Type = "Алкоголик", Original = baseSalaryTable, AfterDecorators = baseSalaryTable * 0.85m, AfterBank = alcoholicAfterBankTable },
+    new { Type = "Спортсмен", Original = baseSalaryTable, AfterDecorators = baseSalaryTable + 3000m, AfterBank = sportsmanAfterBankTable }
+};
+
+            foreach (var row in tableRows)
+            {
+                decimal efficiency = row.AfterBank / row.Original * 100;
+
+                Console.WriteLine("| {0,-20} | {1,15:F2} | {2,15:F2} | {3,15:F2} | {4,14:F1}% |",
+                    row.Type, row.Original, row.AfterDecorators, row.AfterBank, efficiency);
+            }
+            Console.WriteLine(new string('-', 96));
+
+            // 5. СРАВНЕНИЕ ЧЕРЕЗ РАЗНЫЕ БАНКИ
+            Console.WriteLine("\n" + new string('=', 60));
+            Console.WriteLine("СРАВНЕНИЕ ДЛЯ КАЖДОГО ТИПА ЧЕРЕЗ РАЗНЫЕ БАНКИ:");
+            Console.WriteLine(new string('=', 60));
+
+            List<IPaymentStrategy> allStrategies = new List<IPaymentStrategy>
+            {
+                sberbankStrategy,
+                gazpromStrategy,
+                tinkoffStrategy
             };
 
-            Console.WriteLine("\nРасчет заработной платы:");
-            Console.WriteLine("-------------------------");
+            string[] employeeTypes = { "Обычный", "Алкоголик", "Спортсмен" };
+            Employee[] employeeArray = { normalEmployee, alcoholicEmployee, sportsmanEmployee };
 
-            decimal totalAlcoholTax = 0;
-
-            foreach (var kvp in employeePaymentStrategies)
+            for (int i = 0; i < employeeArray.Length; i++)
             {
-                Employee emp = kvp.Key;
-                IPaymentStrategy strategy = kvp.Value;
+                Console.WriteLine($"\n{employeeTypes[i]}:");
+                Console.WriteLine(new string('-', 50));
 
-                decimal salaryBefore = emp.MonthlySalary;
-                decimal salaryAfter = emp.CalculateSalary(strategy);
-                decimal commission = salaryBefore - salaryAfter;
-                decimal alcoholTax = 0;
-                if (emp is AlcoholicDecorator alcoholic)
+                foreach (var strategy in allStrategies)
                 {
-                    decimal originalSalary = alcoholic.GetOriginalSalary();
-                    alcoholTax = originalSalary - salaryBefore;
-                    totalAlcoholTax += alcoholTax;
+                    decimal salary = employeeArray[i].CalculateSalary(strategy);
+                    decimal original = baseSalary;
 
-                    Console.WriteLine($"\n⚠️ {emp.Name} (АЛКОГОЛИК):");
-                    Console.WriteLine($"  Оригинальный оклад: {originalSalary:F2} руб.");
-                    Console.WriteLine($"  Налог на алкоголь ({alcoholTax / originalSalary * 100:F1}%): -{alcoholTax:F2} руб.");
-                    Console.WriteLine($"  Оклад после налога: {salaryBefore:F2} руб.");
-                }
-                else
-                {
-                    Console.WriteLine($"\n{emp.Name}:");
-                }
+                    if (employeeArray[i] is AlcoholicDecorator alc)
+                        original = alc.GetOriginalSalary();
+                    else if (employeeArray[i] is SportsmanDecorator sp)
+                        original = sp.GetSalaryWithoutBonus();
 
-                Console.WriteLine($"  Сервис: {strategy.GetServiceName()}");
-                Console.WriteLine($"  Комиссия банка: {commission:F2} руб.");
-                Console.WriteLine($"  К выплате: {salaryAfter:F2} руб.");
+                    decimal efficiency = salary / original * 100;
+
+                    Console.WriteLine($"{strategy.GetServiceName()}: {salary:F2} руб. ({efficiency:F1}% от базовой)");
+                }
             }
 
-            if (decoratedAlcoholic is AlcoholicDecorator detailedAlcoholic)
-            {
-                decimal original = detailedAlcoholic.GetOriginalSalary();
-                decimal afterAlcoholTax = detailedAlcoholic.MonthlySalary;
-                decimal alcoholTaxAmount = original - afterAlcoholTax;
+            // 6. ВЫВОДЫ И РЕКОМЕНДАЦИИ
+            Console.WriteLine("\n" + new string('=', 60));
+            Console.WriteLine("ВЫВОДЫ И РЕКОМЕНДАЦИИ:");
+            Console.WriteLine(new string('=', 60));
 
-                Console.WriteLine($"1. Оригинальный оклад: {original:F2} руб.");
-                Console.WriteLine($"2. Налог на алкоголь (15%): -{alcoholTaxAmount:F2} руб.");
-                Console.WriteLine($"3. Остаток после налога: {afterAlcoholTax:F2} руб.");
-                Console.WriteLine("\nСравнение банковских сервисов для алкоголика:");
-                Console.WriteLine("---------------------------------------------");
+            Console.WriteLine("\nСравнительный анализ:");
 
-                List<IPaymentStrategy> strategiesForAlcoholic = new List<IPaymentStrategy>
-                {
-                    testStrategy,
-                    sberbankStrategy,
-                    gazpromStrategy,
-                    tinkoffStrategy
-                };
+            decimal normalFinal = normalEmployee.CalculateSalary(gazpromStrategy);
+            decimal alcFinal = alcoholicEmployee.CalculateSalary(gazpromStrategy);
+            decimal sportsFinal = sportsmanEmployee.CalculateSalary(gazpromStrategy);
 
-                foreach (var strategy in strategiesForAlcoholic)
-                {
-                    decimal final = detailedAlcoholic.CalculateSalary(strategy);
-                    decimal bankCommission = afterAlcoholTax - final;
-                    decimal totalCommission = alcoholTaxAmount + bankCommission;
-                    decimal totalPercentage = (totalCommission / original) * 100;
+            Console.WriteLine($"Обычный сотрудник получает: {normalFinal:F2} руб.");
+            Console.WriteLine($"Алкоголик получает: {alcFinal:F2} руб. (на {normalFinal - alcFinal:F2} руб. меньше)");
+            Console.WriteLine($"Спортсмен получает: {sportsFinal:F2} руб. (на {sportsFinal - normalFinal:F2} руб. больше)");
 
-                    Console.WriteLine($"\n  {strategy.GetServiceName()}:");
-                    Console.WriteLine($"    Налог на алкоголь: -{alcoholTaxAmount:F2} руб.");
-                    Console.WriteLine($"    Комиссия банка: -{bankCommission:F2} руб.");
-                    Console.WriteLine($"    Всего удержано: -{totalCommission:F2} руб. ({totalPercentage:F1}%)");
-                    Console.WriteLine($"    К выплате: {final:F2} руб.");
-                }
-            }
+            Console.WriteLine($"\nФинансовые потери/выгоды:");
+            Console.WriteLine($"Алкоголик теряет {normalFinal - alcFinal:F2} руб. в месяц из-за вредной привычки");
+            Console.WriteLine($"Спортсмен получает на {sportsFinal - normalFinal:F2} руб. больше благодаря ЗОЖ");
+            Console.WriteLine($"Разница между алкоголиком и спортсменом: {sportsFinal - alcFinal:F2} руб. в месяц!");
+
+            Console.WriteLine($"\nРекомендации:");
+            Console.WriteLine($"Алкоголику: бросить пить → +{normalFinal - alcFinal:F2} руб. в месяц");
+            Console.WriteLine($"Обычному: начать заниматься спортом → +{sportsFinal - normalFinal:F2} руб. в месяц");
+            Console.WriteLine($"Спортсмену: продолжать в том же духе!");
+
+            Console.WriteLine($"\nГодовой эффект:");
+            Console.WriteLine($"Алкоголик теряет за год: {(normalFinal - alcFinal) * 12:F2} руб.");
+            Console.WriteLine($"Спортсмен выигрывает за год: {(sportsFinal - normalFinal) * 12:F2} руб.");
+            Console.WriteLine($"Общая разница за год: {(sportsFinal - alcFinal) * 12:F2} руб.");
+
+            Console.WriteLine("\n" + new string('=', 60));
+            Console.WriteLine("ПРОГРАММА ЗАВЕРШЕНА");
+            Console.WriteLine(new string('=', 60));
+            Console.ReadKey();
         }
     }
 }
