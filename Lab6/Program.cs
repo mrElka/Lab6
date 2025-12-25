@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Lab6;
+using System;
 using System.Collections.Generic;
 
-namespace Lab6
+namespace Lab6Patterns
 {
     class Program
     {
@@ -24,10 +25,13 @@ namespace Lab6
             Employee projectManager = new ProjectManager("Алексей Иванов", 90000m);
             Employee dataAnalyst = new DataAnalyst("Елена Кузнецова", 68000m);
 
+            Employee alcoholicEmployee = new LabAssistant("Петр Водкин", 50000m);
+
             employees.Add(researcher);
             employees.Add(labAssistant);
             employees.Add(projectManager);
             employees.Add(dataAnalyst);
+            employees.Add(alcoholicEmployee);
 
             foreach (var emp in employees)
             {
@@ -71,13 +75,37 @@ namespace Lab6
             );
             decoratedEmployees.Add(decoratedAnalyst);
 
+            Employee decoratedAlcoholic = new AlcoholicDecorator(
+                alcoholicEmployee,
+                0.15m,
+                "Удержание части зарплаты для ограничения расходов на алкогольные напитки"
+            );
+
+
+            decoratedAlcoholic = new EnglishDecorator(
+                decoratedAlcoholic,
+                "Basic English Certificate",
+                new DateTime(2020, 5, 10)
+            );
+
+            decoratedEmployees.Add(decoratedAlcoholic);
+
             Console.WriteLine("\nИнформация о сотрудниках после добавления характеристик:");
             Console.WriteLine("==========================================================");
 
             foreach (var emp in decoratedEmployees)
             {
                 Console.WriteLine("\n" + emp.GetInfo());
-                Console.WriteLine($"Оклад: {emp.MonthlySalary} руб.");
+
+                if (emp is AlcoholicDecorator alcoholic)
+                {
+                    Console.WriteLine($"Оригинальный оклад (до вычета): {alcoholic.GetOriginalSalary():F2} руб.");
+                }
+                else
+                {
+                    Console.WriteLine($"Оклад: {emp.MonthlySalary} руб.");
+                }
+
                 Console.WriteLine("----------------------------------------------------------");
             }
 
@@ -94,14 +122,14 @@ namespace Lab6
                 { decoratedResearcher, sberbankStrategy },
                 { decoratedLabAssistant, gazpromStrategy },
                 { decoratedManager, sberbankStrategy },
-                { decoratedAnalyst, tinkoffStrategy }
+                { decoratedAnalyst, tinkoffStrategy },
+                { decoratedAlcoholic, gazpromStrategy }
             };
 
             Console.WriteLine("\nРасчет заработной платы:");
             Console.WriteLine("-------------------------");
 
-            decimal totalSalaryBefore = 0;
-            decimal totalSalaryAfter = 0;
+            decimal totalAlcoholTax = 0;
 
             foreach (var kvp in employeePaymentStrategies)
             {
@@ -111,71 +139,62 @@ namespace Lab6
                 decimal salaryBefore = emp.MonthlySalary;
                 decimal salaryAfter = emp.CalculateSalary(strategy);
                 decimal commission = salaryBefore - salaryAfter;
+                decimal alcoholTax = 0;
+                if (emp is AlcoholicDecorator alcoholic)
+                {
+                    decimal originalSalary = alcoholic.GetOriginalSalary();
+                    alcoholTax = originalSalary - salaryBefore;
+                    totalAlcoholTax += alcoholTax;
 
-                totalSalaryBefore += salaryBefore;
-                totalSalaryAfter += salaryAfter;
+                    Console.WriteLine($"\n⚠️ {emp.Name} (АЛКОГОЛИК):");
+                    Console.WriteLine($"  Оригинальный оклад: {originalSalary:F2} руб.");
+                    Console.WriteLine($"  Налог на алкоголь ({alcoholTax / originalSalary * 100:F1}%): -{alcoholTax:F2} руб.");
+                    Console.WriteLine($"  Оклад после налога: {salaryBefore:F2} руб.");
+                }
+                else
+                {
+                    Console.WriteLine($"\n{emp.Name}:");
+                }
 
-                Console.WriteLine($"\n{emp.Name}:");
-                Console.WriteLine($"  Оклад: {salaryBefore} руб.");
                 Console.WriteLine($"  Сервис: {strategy.GetServiceName()}");
-                Console.WriteLine($"  Комиссия: {commission:F2} руб.");
+                Console.WriteLine($"  Комиссия банка: {commission:F2} руб.");
                 Console.WriteLine($"  К выплате: {salaryAfter:F2} руб.");
             }
 
-            Console.WriteLine("\n----------------------------------------------------------");
-            Console.WriteLine($"ИТОГО:");
-            Console.WriteLine($"  Общая сумма окладов: {totalSalaryBefore} руб.");
-            Console.WriteLine($"  Общая сумма к выплате: {totalSalaryAfter:F2} руб.");
-            Console.WriteLine($"  Общая комиссия банков: {totalSalaryBefore - totalSalaryAfter:F2} руб.");
-
-            Console.WriteLine("\n4. ДЕМОНСТРАЦИЯ СМЕНЫ СТРАТЕГИИ:");
-            Console.WriteLine("================================");
-
-            Employee testEmployee = decoratedResearcher;
-            Console.WriteLine($"\nТестируем смену стратегии для: {testEmployee.Name}");
-            Console.WriteLine($"Оклад: {testEmployee.MonthlySalary} руб.");
-
-            Console.WriteLine("\nСравнение разных банковских сервисов:");
-            Console.WriteLine("--------------------------------------");
-
-            List<IPaymentStrategy> allStrategies = new List<IPaymentStrategy>
+            if (decoratedAlcoholic is AlcoholicDecorator detailedAlcoholic)
             {
-                testStrategy,
-                sberbankStrategy,
-                gazpromStrategy,
-                tinkoffStrategy
-            };
+                decimal original = detailedAlcoholic.GetOriginalSalary();
+                decimal afterAlcoholTax = detailedAlcoholic.MonthlySalary;
+                decimal alcoholTaxAmount = original - afterAlcoholTax;
 
-            foreach (var strategy in allStrategies)
-            {
-                decimal finalSalary = testEmployee.CalculateSalary(strategy);
-                decimal commission = testEmployee.MonthlySalary - finalSalary;
+                Console.WriteLine($"1. Оригинальный оклад: {original:F2} руб.");
+                Console.WriteLine($"2. Налог на алкоголь (15%): -{alcoholTaxAmount:F2} руб.");
+                Console.WriteLine($"3. Остаток после налога: {afterAlcoholTax:F2} руб.");
+                Console.WriteLine("\nСравнение банковских сервисов для алкоголика:");
+                Console.WriteLine("---------------------------------------------");
 
-                Console.WriteLine($"  {strategy.GetServiceName()}:");
-                Console.WriteLine($"    Комиссия: {commission:F2} руб.");
-                Console.WriteLine($"    К выплате: {finalSalary:F2} руб.");
+                List<IPaymentStrategy> strategiesForAlcoholic = new List<IPaymentStrategy>
+                {
+                    testStrategy,
+                    sberbankStrategy,
+                    gazpromStrategy,
+                    tinkoffStrategy
+                };
+
+                foreach (var strategy in strategiesForAlcoholic)
+                {
+                    decimal final = detailedAlcoholic.CalculateSalary(strategy);
+                    decimal bankCommission = afterAlcoholTax - final;
+                    decimal totalCommission = alcoholTaxAmount + bankCommission;
+                    decimal totalPercentage = (totalCommission / original) * 100;
+
+                    Console.WriteLine($"\n  {strategy.GetServiceName()}:");
+                    Console.WriteLine($"    Налог на алкоголь: -{alcoholTaxAmount:F2} руб.");
+                    Console.WriteLine($"    Комиссия банка: -{bankCommission:F2} руб.");
+                    Console.WriteLine($"    Всего удержано: -{totalCommission:F2} руб. ({totalPercentage:F1}%)");
+                    Console.WriteLine($"    К выплате: {final:F2} руб.");
+                }
             }
-
-            Console.WriteLine("\n5. ДОПОЛНИТЕЛЬНЫЕ ПРИМЕРЫ:");
-            Console.WriteLine("==========================");
-
-            Console.WriteLine("\nПример сотрудника без дополнительных характеристик:");
-            Employee simpleEmployee = new LabAssistant("Петр Сергеев", 40000m);
-            Console.WriteLine(simpleEmployee.GetInfo());
-            Console.WriteLine($"Зарплата через Газпромбанк: {simpleEmployee.CalculateSalary(gazpromStrategy):F2} руб.");
-
-            Console.WriteLine("\nДинамическое добавление характеристик:");
-            Employee dynamicEmployee = new DataAnalyst("Ольга Новикова", 55000m);
-            Console.WriteLine("Исходная информация:");
-            Console.WriteLine(dynamicEmployee.GetInfo());
-
-            dynamicEmployee = new EnglishDecorator(dynamicEmployee, "Test of English", DateTime.Now);
-            Console.WriteLine("\nПосле добавления английского:");
-            Console.WriteLine(dynamicEmployee.GetInfo());
-
-            dynamicEmployee = new DegreeDecorator(dynamicEmployee, "Математика", "Статистические методы", 2023);
-            Console.WriteLine("\nПосле добавления ученой степени:");
-            Console.WriteLine(dynamicEmployee.GetInfo());
         }
     }
 }
